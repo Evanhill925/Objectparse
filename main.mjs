@@ -3,10 +3,11 @@ import { dataThree } from './burrito_bowl.mjs';
 import { dataFive } from './createMrPickle.mjs';
 
 
-function getItemName(data){
+export function getItemName(data){
     const itemName= data.data.itemPage.itemHeader.name;
-    console.log(itemName);
+    return itemName;
 }
+
 function getOptions(data) {
     const optionLists = data.data.itemPage.optionLists;
     const categories = {};
@@ -50,7 +51,7 @@ function getOptionQuantity(data) {
 
 
 
-function fieldExistsAndNotEmpty(field) {
+export function fieldExistsAndNotEmpty(field) {
     if (field) {
         const value = field
         
@@ -62,28 +63,38 @@ function fieldExistsAndNotEmpty(field) {
         
         // Check for empty string
         if (typeof value === 'string' && value.trim() === '') {
+            console.log('string')
             return false;
         }
         
         // Check for empty array
         if (Array.isArray(value) && value.length === 0) {
+
             return false;
         }
         
         // Check for empty object
         if (typeof value === 'object' && Object.keys(value).length === 0) {
+
             return false;
         }
         
         // If we've made it this far, the field exists and is not empty
         return true;
     }
-    
-    // Field doesn't exist
-    return false;
-}
+    else if (field === 0) // special case May need to handle better in the future
+        return true
 
-function getOptionsValues(data){
+    else { // Field doesn't exist
+        return false;
+    }}
+    
+   
+
+fieldExistsAndNotEmpty(0)
+
+
+export function getOptionsValues(data){
     let subtitle = ''
     let minNumOptions = ''
     let maxNumOptions = ''
@@ -103,7 +114,7 @@ function getOptionsValues(data){
     return `${subtitle}. The minimum option is ${minNumOptions} and the maximum option is ${maxNumOptions}`
 }
 
-function reccomendedCheck(myList){
+export function reccomendedCheck(myList){
    let optionFilterforRecommendedOrDoubleDash = myList.name.includes("Recommended") || myList.name.includes("DoubleDash")
 return optionFilterforRecommendedOrDoubleDash
 }
@@ -189,13 +200,15 @@ function getNestedOptionQuantityTest(data) {
     console.log(quantityLimits);
     return quantityLimits;
 }
-getNestedOptionQuantityTest(dataThree);
+// getNestedOptionQuantityTest(dataThree);
 
-function reOptions(genOption,innerCategories) {
+export function reOptions(genOption,innerCategories) {
     for(let i = 0; i <genOption.length; i++) {
         let hasNested= genOption[i].nestedExtrasList
         if (fieldExistsAndNotEmpty(hasNested)){
             const categoryName = genOption[i].name;
+            console.log(categoryName)
+
             const options =genOption[i].nestedExtrasList[0].options.map(option => option.name);
             innerCategories[categoryName] = options
         
@@ -208,12 +221,38 @@ function reOptions(genOption,innerCategories) {
 
 }
 
+//genOptions
+//.nestedExtrasList -- array
+// nestedExtralist[0] -- object 
+// nestedExtralist[0].options -- array
+
+export function reQuantity(genOption,innerQuantities) {
+    
+    for(let i = 0; i <genOption.length; i++) {
+        let hasNested= genOption[i].nestedExtrasList
+        if (fieldExistsAndNotEmpty(hasNested)){
+            const tempIndex = genOption[i].nestedExtrasList[0].name
+            
+            const nestedQuantity = getOptionsValues(genOption[i].nestedExtrasList[0])
+            innerQuantities[tempIndex] = nestedQuantity
+            
+            // console.log(genOption[i].nestedExtrasList[0].map(x => x.subtitle))
+            // console.log(genOption[i].nestedExtrasList[0])
+        
+        }
+
+        
+    }
+    
+    return innerQuantities
+
+}
 
 
 
 
 
-function getOptionsTest(data) {
+export function getOptionsTest(data) {
     const optionLists = data.data.itemPage.optionLists;
     const categories = {};
     let nestedCategories = {};
@@ -235,7 +274,7 @@ function getOptionsTest(data) {
     return categories;
 }
 
-getOptionsTest(dataFive)
+// getOptionsTest(dataFive)
 
 
 
@@ -247,17 +286,23 @@ getOptionsTest(dataFive)
 function getOptionQuantityTest(data) {
     const optionLists = data.data.itemPage.optionLists;
     const quantityLimits = [];
+    let nestedOptions = {};
     for(let i = 0; i < optionLists.length; i++) {
         if(optionLists[i].name.includes("Recommended")|| optionLists[i].name.includes("DoubleDash")) {
             continue;
         }
-        const minOption = optionLists[i].minNumOptions;
-        const maxOption = optionLists[i].maxNumOptions;
-        const optionSub = optionLists[i].subtitle;
-        quantityLimits.push(`${optionSub}. The minimum option is ${minOption} and the maximum option is ${maxOption}`);
+        quantityLimits.push(getOptionsValues(optionLists[i]));
+        nestedOptions = reQuantity(optionLists[i].options,nestedOptions)
+        
+        // console.log(optionLists[i].options.map(option => getOptionsValues(option.nestedExtrasList)))
     }
+    // console.log(optionsList[i].optiions.nestedExtrasList)
+    // console.log(nestedOptions)
+    console.log(quantityLimits);
     return quantityLimits;
 }
+
+// getOptionQuantityTest(dataFive);
 
 function combineOptionsAndQuantities(data) {
     const categories = getOptionsTest(data);
@@ -274,7 +319,12 @@ function combineOptionsAndQuantities(data) {
     return result;
 }
 
+
+
 // combineOptionsAndQuantities(dataFive)
+
+
+
 
 
 

@@ -65,7 +65,7 @@ export const dataThree = {
                     "options": [
                         {
                             "id": "36898397349",
-                            "name": "Chicken al Pastor",
+                            "name": "Chicken8 al Pastor",
                             "unitAmount": 65,
                             "currency": "USD",
                             "displayString": "+$0.65",
